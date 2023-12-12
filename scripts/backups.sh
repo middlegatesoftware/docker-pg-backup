@@ -94,13 +94,13 @@ function backup_db() {
         gzip "$FILENAME"
         echo "Backing up $FILENAME to s3://${BUCKET}/" >>/var/log/cron.log
         ${EXTRA_PARAMS}
-        rm "${MYBACKUPDIR}/*.dmp.gz"
+        rm ${MYBACKUPDIR}/*.dmp.gz
       fi
     else
       dump_tables ${DB} ${DUMP_ARGS} ${MYDATE} "${MYBACKUPDIR}"
       if [[ ${STORAGE_BACKEND} == "S3" ]]; then
         ${EXTRA_PARAMS}
-        rm "${MYBACKUPDIR}/*"
+        rm ${MYBACKUPDIR}/*
       fi
     fi
   done
