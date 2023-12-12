@@ -65,11 +65,11 @@ ORDER BY table_schema,table_name;"))
 MYDATE=$(date +%Y-%m-%d_%H-%M-%S)
 MONTH=$(date +%B)
 YEAR=$(date +%Y)
-DAY=$(date "+%d - %A")
+DAY=$(date "+%d-%A")
 MYBASEDIR=/${BUCKET}
 MYBACKUPDIR="${MYBASEDIR}/${YEAR}/${MONTH}/${DAY}"
 mkdir -p "${MYBACKUPDIR}"
-pushd ${MYBACKUPDIR} || exit
+pushd "${MYBACKUPDIR}" || exit
 
 function backup_db() {
   EXTRA_PARAMS=''
