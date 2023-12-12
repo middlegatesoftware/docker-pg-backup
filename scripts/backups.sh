@@ -62,12 +62,13 @@ ORDER BY table_schema,table_name;"))
 }
 
 # Env variables
-MYDATE=$(date +%d-%B-%Y)
+MYDATE=$(date +%Y-%m-%d_%H-%M-%S)
 MONTH=$(date +%B)
 YEAR=$(date +%Y)
+DAY=$(date "+%d - %A")
 MYBASEDIR=/${BUCKET}
-MYBACKUPDIR=${MYBASEDIR}/${YEAR}/${MONTH}
-mkdir -p ${MYBACKUPDIR}
+MYBACKUPDIR="${MYBASEDIR}/${YEAR}/${MONTH}/${DAY}"
+mkdir -p "${MYBACKUPDIR}"
 pushd ${MYBACKUPDIR} || exit
 
 function backup_db() {
@@ -77,29 +78,29 @@ function backup_db() {
   fi
   for DB in ${DBLIST}; do
     if [ -z "${ARCHIVE_FILENAME:-}" ]; then
-      export FILENAME=${MYBACKUPDIR}/${DUMPPREFIX}_${DB}.${MYDATE}.dmp
+      export FILENAME="${MYBACKUPDIR}/${DUMPPREFIX}_${DB}.${MYDATE}.dmp"
     else
-      export FILENAME=${MYBASEDIR}/"${ARCHIVE_FILENAME}.${DB}.dmp"
+      export FILENAME="${MYBASEDIR}/${ARCHIVE_FILENAME}.${DB}.dmp"
     fi
     echo "Backing up $DB" >>/var/log/cron.log
     if [ -z "${DB_TABLES:-}" ]; then
       if [[ "${DB_DUMP_ENCRYPTION}" =~ [Tt][Rr][Uu][Ee] ]];then
-        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} ${DUMP_ARGS} -d ${DB} | openssl enc -aes-256-cbc -pass pass:${DB_DUMP_ENCRYPTION_PASS_PHRASE} -pbkdf2 -iter 10000 -md sha256 -out ${FILENAME}
+        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} ${DUMP_ARGS} -d ${DB} | openssl enc -aes-256-cbc -pass pass:${DB_DUMP_ENCRYPTION_PASS_PHRASE} -pbkdf2 -iter 10000 -md sha256 -out "${FILENAME}"
       else
-        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} ${DUMP_ARGS} -d ${DB} > ${FILENAME}
+        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} ${DUMP_ARGS} -d ${DB} > "${FILENAME}"
       fi
       echo "Backing up $FILENAME done" >>/var/log/cron.log
       if [[ ${STORAGE_BACKEND} == "S3" ]]; then
-        gzip $FILENAME
+        gzip "$FILENAME"
         echo "Backing up $FILENAME to s3://${BUCKET}/" >>/var/log/cron.log
         ${EXTRA_PARAMS}
-        rm ${MYBACKUPDIR}/*.dmp.gz
+        rm "${MYBACKUPDIR}/*.dmp.gz"
       fi
     else
-      dump_tables ${DB} ${DUMP_ARGS} ${MYDATE} ${MYBACKUPDIR}
+      dump_tables ${DB} ${DUMP_ARGS} ${MYDATE} "${MYBACKUPDIR}"
       if [[ ${STORAGE_BACKEND} == "S3" ]]; then
         ${EXTRA_PARAMS}
-        rm ${MYBACKUPDIR}/*
+        rm "${MYBACKUPDIR}/*"
       fi
     fi
   done
