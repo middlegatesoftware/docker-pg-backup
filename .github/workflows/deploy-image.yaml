@@ -8,11 +8,14 @@ on:
       - master
     types:
       - completed
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   deploy-image:
     runs-on: ubuntu-latest
-    env:
-      latest-ref: refs/heads/develop
     strategy:
       matrix:
         postgresMajorVersion:
