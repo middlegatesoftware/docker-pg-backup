@@ -53,9 +53,9 @@ ORDER BY table_schema,table_name;"))
     TABLE_NAME="${strarr[1]}"
     # names and schema names
     if [[ "${DB_DUMP_ENCRYPTION}" =~ [Tt][Rr][Uu][Ee] ]];then
-        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} -d ${DATABASE} ${DATABASE_DUMP_OPTIONS} -t ${SCHEMA_NAME}."${TABLE_NAME}" | openssl enc -aes-256-cbc -pass pass:${DB_DUMP_ENCRYPTION_PASS_PHRASE} -pbkdf2 -iter 10000 -md sha256 -out $DATA_PATH/${DATABASE}_${SCHEMA_NAME}_"${TABLE_NAME}"_${TIME_STAMP}.dmp
+        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} -d ${DATABASE} ${DATABASE_DUMP_OPTIONS} -t ${SCHEMA_NAME}."${TABLE_NAME}" | openssl enc -aes-256-cbc -pass pass:${DB_DUMP_ENCRYPTION_PASS_PHRASE} -pbkdf2 -iter 10000 -md sha256 -out $DATA_PATH/${TIME_STAMP}_${DATABASE}_${SCHEMA_NAME}_"${TABLE_NAME}".dmp
     else
-        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} -d ${DATABASE} ${DATABASE_DUMP_OPTIONS} -t ${SCHEMA_NAME}."${TABLE_NAME}" >$DATA_PATH/${DATABASE}_${SCHEMA_NAME}_"${TABLE_NAME}"_${TIME_STAMP}.dmp
+        PGPASSWORD=${POSTGRES_PASS} pg_dump ${PG_CONN_PARAMETERS} -d ${DATABASE} ${DATABASE_DUMP_OPTIONS} -t ${SCHEMA_NAME}."${TABLE_NAME}" >$DATA_PATH/${TIME_STAMP}_${DATABASE}_${SCHEMA_NAME}_"${TABLE_NAME}".dmp
 
     fi
   done
@@ -78,7 +78,7 @@ function backup_db() {
   fi
   for DB in ${DBLIST}; do
     if [ -z "${ARCHIVE_FILENAME:-}" ]; then
-      export FILENAME="${MYBACKUPDIR}/${DUMPPREFIX}_${DB}.${MYDATE}.dmp"
+      export FILENAME="${MYBACKUPDIR}/${DUMPPREFIX}_${MYDATE}.${DB}.dmp"
     else
       export FILENAME="${MYBASEDIR}/${ARCHIVE_FILENAME}.${DB}.dmp"
     fi
